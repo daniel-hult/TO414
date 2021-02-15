@@ -1,0 +1,50 @@
+---
+title: "Project1BreakoutRoom"
+author: "Daniel Hult"
+date: "2/10/2021"
+output: html_document
+---
+
+# Data Cleaning & Setup
+```{r}
+hotels <- read.csv("hotel_bookings.csv")
+str(hotels)
+library(ggplot2)
+```
+
+# Cancellation Rate
+```{r}
+cancellation_rate <- round(sum(hotels$is_canceled)/nrow(hotels), 2)
+cancellation_rate
+```
+
+# Most common arrival month?
+```{r}
+library(ggplot2)
+month_arrivals <- table(hotels$arrival_date_month)
+
+barplot(month_arrivals, main = "Number of Arrivals by Month", xlab = "Month", ylab = "Number of Arrivals", col = "blue")
+
+month_arrivals <- table(hotels$arrival_date_month)
+month_arrivals <- data.frame(month_arrivals)
+ggplot(data = month_arrivals, aes(x = Var1, y = Freq)) + geom_bar(stat = "identity")
+```
+
+# How many companies came to the hotels? 
+```{r}
+nlevels(hotels$company)
+```
+
+# How many total bookings were from agencies?
+```{r}
+nrow(hotels) - summary(hotels$agent)[2]
+# 103,050 bookings
+```
+
+# Which countries had the most reservations?
+```{r}
+country_arrivals <- sort(table(hotels$country), decreasing = TRUE)
+country_arrivals <- data.frame(country_arrivals)[1:10,]
+country_arrivals
+ggplot(data = country_arrivals, aes(x = Var1, y = Freq)) + geom_bar(stat = "identity")
+```

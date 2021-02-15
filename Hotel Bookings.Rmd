@@ -1,0 +1,17 @@
+---
+title: "Hotel Bookings"
+author: "Braden Crimmins, Jaylen Burch, Tanner Burke, Derek Fuller, Daniel Hult"
+date: "2/15/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Data Cleaning
+```{r}
+
+
+
+```
