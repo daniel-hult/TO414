@@ -11,6 +11,59 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # Data Cleaning
 ```{r}
+hotels <- read.csv("hotel_bookings.csv")
+str(hotels)
+summary(hotels)
+
+# Variables turned into factors
+# arrival_date_year
+# arrival_date_month
+# arrival_date_week_number
+# arrival_date_day_of_month
+# adults
+# children
+# babies
+# previous_cancellations
+# previous_bookings_not_cancelled
+# booking_changes
+# required_car_parking_spaces
+# total_of_special_requests
+# country
+# meal
+# market_segment
+# distribution_channel
+# customer_type
+# reservation_status
+# reserved_room_type
+# assigned_room_type
+# hotel
+
+hotels$arrival_date_month <- as.factor(hotels$arrival_date_month)
+hotels$arrival_date_year <- as.factor(hotels$arrival_date_year)
+hotels$arrival_date_week_number <- as.factor(hotels$arrival_date_week_number)
+hotels$arrival_date_day_of_month <- as.factor(hotels$arrival_date_day_of_month)
+hotels$children <- as.factor(hotels$children)
+hotels$adults <- as.factor(hotels$adults)
+hotels$babies <- as.factor(hotels$babies)
+hotels$previous_cancellations <- as.factor(hotels$previous_cancellations)
+hotels$previous_bookings_not_cancelled <- as.factor(hotels$previous_bookings_not_cancelled)
+hotels$booking_changes <- as.factor(hotels$booking_changes)
+hotels$required_car_parking_spaces <- as.factor(hotels$required_car_parking_spaces)
+hotels$total_of_special_requests <- as.factor(hotels$total_of_special_requests)
+hotels$country <- as.factor(hotels$country)
+hotels$meal <- as.factor(hotels$meal)
+hotels$market_segment <- as.factor(hotels$market_segment)
+hotels$distribution_channel <- as.factor(hotels$distribution_channel)
+hotels$customer_type <- as.factor(hotels$customer_type)
+hotels$reservation_status <- as.factor(hotels$reservation_status)
+hotels$reserved_room_type <- as.factor(hotels$reserved_room_type)
+hotels$assigned_room_type <- as.factor(hotels$assigned_room_type)
+hotels$hotel <- as.factor(hotels$hotel)
+
+```
+
+# Testing
+```{r}
 
 
 

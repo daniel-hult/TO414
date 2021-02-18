@@ -197,6 +197,123 @@ summary {
 
 <div id="data-cleaning" class="section level1">
 <h1>Data Cleaning</h1>
+<pre class="r"><code>hotels &lt;- read.csv(&quot;hotel_bookings.csv&quot;)
+str(hotels)</code></pre>
+<pre><code>## &#39;data.frame&#39;:    119390 obs. of  32 variables:
+##  $ hotel                         : chr  &quot;Resort Hotel&quot; &quot;Resort Hotel&quot; &quot;Resort Hotel&quot; &quot;Resort Hotel&quot; ...
+##  $ is_canceled                   : int  0 0 0 0 0 0 0 0 1 1 ...
+##  $ lead_time                     : int  342 737 7 13 14 14 0 9 85 75 ...
+##  $ arrival_date_year             : int  2015 2015 2015 2015 2015 2015 2015 2015 2015 2015 ...
+##  $ arrival_date_month            : chr  &quot;July&quot; &quot;July&quot; &quot;July&quot; &quot;July&quot; ...
+##  $ arrival_date_week_number      : int  27 27 27 27 27 27 27 27 27 27 ...
+##  $ arrival_date_day_of_month     : int  1 1 1 1 1 1 1 1 1 1 ...
+##  $ stays_in_weekend_nights       : int  0 0 0 0 0 0 0 0 0 0 ...
+##  $ stays_in_week_nights          : int  0 0 1 1 2 2 2 2 3 3 ...
+##  $ adults                        : int  2 2 1 1 2 2 2 2 2 2 ...
+##  $ children                      : int  0 0 0 0 0 0 0 0 0 0 ...
+##  $ babies                        : int  0 0 0 0 0 0 0 0 0 0 ...
+##  $ meal                          : chr  &quot;BB&quot; &quot;BB&quot; &quot;BB&quot; &quot;BB&quot; ...
+##  $ country                       : chr  &quot;PRT&quot; &quot;PRT&quot; &quot;GBR&quot; &quot;GBR&quot; ...
+##  $ market_segment                : chr  &quot;Direct&quot; &quot;Direct&quot; &quot;Direct&quot; &quot;Corporate&quot; ...
+##  $ distribution_channel          : chr  &quot;Direct&quot; &quot;Direct&quot; &quot;Direct&quot; &quot;Corporate&quot; ...
+##  $ is_repeated_guest             : int  0 0 0 0 0 0 0 0 0 0 ...
+##  $ previous_cancellations        : int  0 0 0 0 0 0 0 0 0 0 ...
+##  $ previous_bookings_not_canceled: int  0 0 0 0 0 0 0 0 0 0 ...
+##  $ reserved_room_type            : chr  &quot;C&quot; &quot;C&quot; &quot;A&quot; &quot;A&quot; ...
+##  $ assigned_room_type            : chr  &quot;C&quot; &quot;C&quot; &quot;C&quot; &quot;A&quot; ...
+##  $ booking_changes               : int  3 4 0 0 0 0 0 0 0 0 ...
+##  $ deposit_type                  : chr  &quot;No Deposit&quot; &quot;No Deposit&quot; &quot;No Deposit&quot; &quot;No Deposit&quot; ...
+##  $ agent                         : chr  &quot;NULL&quot; &quot;NULL&quot; &quot;NULL&quot; &quot;304&quot; ...
+##  $ company                       : chr  &quot;NULL&quot; &quot;NULL&quot; &quot;NULL&quot; &quot;NULL&quot; ...
+##  $ days_in_waiting_list          : int  0 0 0 0 0 0 0 0 0 0 ...
+##  $ customer_type                 : chr  &quot;Transient&quot; &quot;Transient&quot; &quot;Transient&quot; &quot;Transient&quot; ...
+##  $ adr                           : num  0 0 75 75 98 ...
+##  $ required_car_parking_spaces   : int  0 0 0 0 0 0 0 0 0 0 ...
+##  $ total_of_special_requests     : int  0 0 0 0 1 1 0 1 1 0 ...
+##  $ reservation_status            : chr  &quot;Check-Out&quot; &quot;Check-Out&quot; &quot;Check-Out&quot; &quot;Check-Out&quot; ...
+##  $ reservation_status_date       : chr  &quot;7/1/2015&quot; &quot;7/1/2015&quot; &quot;7/2/2015&quot; &quot;7/2/2015&quot; ...</code></pre>
+<pre class="r"><code>summary(hotels)</code></pre>
+<pre><code>##     hotel            is_canceled       lead_time   arrival_date_year
+##  Length:119390      Min.   :0.0000   Min.   :  0   Min.   :2015     
+##  Class :character   1st Qu.:0.0000   1st Qu.: 18   1st Qu.:2016     
+##  Mode  :character   Median :0.0000   Median : 69   Median :2016     
+##                     Mean   :0.3704   Mean   :104   Mean   :2016     
+##                     3rd Qu.:1.0000   3rd Qu.:160   3rd Qu.:2017     
+##                     Max.   :1.0000   Max.   :737   Max.   :2017     
+##                                                                     
+##  arrival_date_month arrival_date_week_number arrival_date_day_of_month
+##  Length:119390      Min.   : 1.00            Min.   : 1.0             
+##  Class :character   1st Qu.:16.00            1st Qu.: 8.0             
+##  Mode  :character   Median :28.00            Median :16.0             
+##                     Mean   :27.17            Mean   :15.8             
+##                     3rd Qu.:38.00            3rd Qu.:23.0             
+##                     Max.   :53.00            Max.   :31.0             
+##                                                                       
+##  stays_in_weekend_nights stays_in_week_nights     adults      
+##  Min.   : 0.0000         Min.   : 0.0         Min.   : 0.000  
+##  1st Qu.: 0.0000         1st Qu.: 1.0         1st Qu.: 2.000  
+##  Median : 1.0000         Median : 2.0         Median : 2.000  
+##  Mean   : 0.9276         Mean   : 2.5         Mean   : 1.856  
+##  3rd Qu.: 2.0000         3rd Qu.: 3.0         3rd Qu.: 2.000  
+##  Max.   :19.0000         Max.   :50.0         Max.   :55.000  
+##                                                               
+##     children           babies              meal             country         
+##  Min.   : 0.0000   Min.   : 0.000000   Length:119390      Length:119390     
+##  1st Qu.: 0.0000   1st Qu.: 0.000000   Class :character   Class :character  
+##  Median : 0.0000   Median : 0.000000   Mode  :character   Mode  :character  
+##  Mean   : 0.1039   Mean   : 0.007949                                        
+##  3rd Qu.: 0.0000   3rd Qu.: 0.000000                                        
+##  Max.   :10.0000   Max.   :10.000000                                        
+##  NA&#39;s   :4                                                                  
+##  market_segment     distribution_channel is_repeated_guest
+##  Length:119390      Length:119390        Min.   :0.00000  
+##  Class :character   Class :character     1st Qu.:0.00000  
+##  Mode  :character   Mode  :character     Median :0.00000  
+##                                          Mean   :0.03191  
+##                                          3rd Qu.:0.00000  
+##                                          Max.   :1.00000  
+##                                                           
+##  previous_cancellations previous_bookings_not_canceled reserved_room_type
+##  Min.   : 0.00000       Min.   : 0.0000                Length:119390     
+##  1st Qu.: 0.00000       1st Qu.: 0.0000                Class :character  
+##  Median : 0.00000       Median : 0.0000                Mode  :character  
+##  Mean   : 0.08712       Mean   : 0.1371                                  
+##  3rd Qu.: 0.00000       3rd Qu.: 0.0000                                  
+##  Max.   :26.00000       Max.   :72.0000                                  
+##                                                                          
+##  assigned_room_type booking_changes   deposit_type          agent          
+##  Length:119390      Min.   : 0.0000   Length:119390      Length:119390     
+##  Class :character   1st Qu.: 0.0000   Class :character   Class :character  
+##  Mode  :character   Median : 0.0000   Mode  :character   Mode  :character  
+##                     Mean   : 0.2211                                        
+##                     3rd Qu.: 0.0000                                        
+##                     Max.   :21.0000                                        
+##                                                                            
+##    company          days_in_waiting_list customer_type           adr         
+##  Length:119390      Min.   :  0.000      Length:119390      Min.   :  -6.38  
+##  Class :character   1st Qu.:  0.000      Class :character   1st Qu.:  69.29  
+##  Mode  :character   Median :  0.000      Mode  :character   Median :  94.58  
+##                     Mean   :  2.321                         Mean   : 101.83  
+##                     3rd Qu.:  0.000                         3rd Qu.: 126.00  
+##                     Max.   :391.000                         Max.   :5400.00  
+##                                                                              
+##  required_car_parking_spaces total_of_special_requests reservation_status
+##  Min.   :0.00000             Min.   :0.0000            Length:119390     
+##  1st Qu.:0.00000             1st Qu.:0.0000            Class :character  
+##  Median :0.00000             Median :0.0000            Mode  :character  
+##  Mean   :0.06252             Mean   :0.5714                              
+##  3rd Qu.:0.00000             3rd Qu.:1.0000                              
+##  Max.   :8.00000             Max.   :5.0000                              
+##                                                                          
+##  reservation_status_date
+##  Length:119390          
+##  Class :character       
+##  Mode  :character       
+##                         
+##                         
+##                         
+## </code></pre>
+<pre class="r"><code>hotels$arrival_date_month &lt;- as.factor(hotels$arrival_date_month)</code></pre>
 </div>
 
 
