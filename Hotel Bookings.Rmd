@@ -11,6 +11,8 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # Data Cleaning
 ```{r}
+library(tidyverse)
+
 hotels <- read.csv("hotel_bookings.csv")
 str(hotels)
 summary(hotels)
@@ -64,6 +66,7 @@ hotels$hotel <- as.factor(hotels$hotel)
 
 # Testing
 ```{r}
+# hotels %>% group_by(country) %>% summarise(num_cancel = sum(is_canceled)) %>% arrange(desc(num_cancel)) %>% head(10) %>% print %>% ggplot(aes(x = country, y = num_cancel, fill= num_cancel))+ geom_col()
 
 
 
