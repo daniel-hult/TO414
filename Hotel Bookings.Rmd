@@ -68,6 +68,7 @@ hotels$kids <- hotels$children + hotels$babies
 
 hotels$totalbookings <- hotels$previous_cancellations + hotels$previous_bookings_not_canceled
 hotels$propcanceled <- ifelse(hotels$totalbookings != 0, hotels$previous_cancellations/hotels$totalbookings, NA)
+hotels$bookedbefore <- as.factor(ifelse(hotels$totalbookings != 0, 1, 0))
 
 hotels$cancelled_morethanhalf <- as.factor(ifelse(hotels$propcanceled > 0.5, 1, 0))
 
@@ -102,6 +103,20 @@ hotels %>% select(is_canceled, children) %>%
 # Num Bookings w/ children = 8590
 # Cancellation rate w/out child = 37%
 # Cancellation rate w/ child = 36%
+# The cancellation rate with and without children is roughly the same - no statistical significance
+
+table(hotels$bookedbefore)
+round(prop.table(table(hotels$bookedbefore)), 3)
+
+round(prop.table(table(hotels$is_canceled[hotels$bookedbefore == 0])), 2)
+round(prop.table(table(hotels$is_canceled[hotels$bookedbefore == 1])), 2)
+#if a customer has booked before, they are much more likely to cancel. 1/3 of first-time customers are likely to cancel whereas 2/3 of repeat customers are likely to cancel.
+
+round(prop.table(table(hotels$is_canceled[hotels$cancelled_morethanhalf == 0])), 2)
+round(prop.table(table(hotels$is_canceled[hotels$cancelled_morethanhalf == 1])), 2)
+# IF a customer has NOT canceled more than half of their bookings, then they will almost certainly check-in/come. IF a customer HAS canceled more than half of their bookings, then they will almost certainly cancel again.
+
+# -----------------------------------------------------------
 
 boxplot(propcanceled ~ is_canceled, data = hotels, na.rm = TRUE)
 
@@ -111,18 +126,14 @@ table(hotels$is_canceled[!is.na(hotels$propcanceled)], hotels$cancelled_morethan
 
 round(prop.table(table(hotels$is_canceled[!is.na(hotels$propcanceled)], hotels$cancelled_morethanhalf[!is.na(hotels$propcanceled)])), 3)
 
-# Only 1/3 of your reservations by people who have made reservations before are made my people who have a history of showing up more than half the time. These people consistently show up and check in to their stay. The remaining 2/3 of reservations are made by people who have a history of cancelling. These people consistently book a reservation and then, ultimately, cancel that reservation.
+# Only 1/3 of your reservations by people who have made reservations before are made my people who have a history of showing up more than half the time. These people consistently show up and check in to their stay. The remaining 2/3 of reservations are made by people who have a history of canceling. These people consistently book a reservation and then, ultimately, cancel that reservation.
 
-# if people cancelled more than half of prev. reservations, it 
+# if people canceled more than half of prev. reservations, it 
 ```
 
-# Forecasting Cancellations
-##### Using the historical data of past cancelations, we can create a model to forecast the likelihood of a future customer canceling.
-###### Another test to check font size
+# Conclusion
 ```{r}
-cancel <- sum(hotels$is_canceled)
-
-hotels$arrival_week_ordered <- hotels$arrival_date_week_number
+# Standard factors that a manager may believe to drive cancellation (e.g. hotel type, children/no children) actually show little to no impact on cancellation rates. Rather, the largest indicator is the customers' history in booking/cancelling behavior. 
 
 
 ```
