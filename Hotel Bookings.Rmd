@@ -2,7 +2,12 @@
 title: "Hotel Bookings"
 author: "Braden Crimmins, Jaylen Burch, Tanner Burke, Derek Fuller, Daniel Hult"
 date: "2/15/2021"
-output: html_document
+output: 
+  html_document:
+    toc: TRUE
+    toc_float:
+      collapsed: FALSE
+      smooth_scroll: TRUE
 ---
 
 ```{r setup, include=FALSE}
@@ -25,7 +30,6 @@ summary(hotels)
 # adults
 # children
 # babies
-# previous_cancellations
 # booking_changes
 # required_car_parking_spaces
 # total_of_special_requests
@@ -64,7 +68,7 @@ hotels$hotel <- as.factor(hotels$hotel)
 
 # Testing
 ```{r}
-# hotels %>% group_by(country) %>% summarise(num_cancel = sum(is_canceled)) %>% arrange(desc(num_cancel)) %>% head(10) %>% print %>% ggplot(aes(x = country, y = num_cancel, fill= num_cancel))+ geom_col()
+hotels %>% group_by(country) %>% summarise(num_cancel = sum(is_canceled)) %>% arrange(desc(num_cancel)) %>% head(10) %>% print %>% ggplot(aes(x = country, y = num_cancel, fill= num_cancel))+ geom_col()
 
 
 
