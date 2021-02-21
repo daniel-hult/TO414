@@ -197,6 +197,15 @@ summary {
 
 <div id="data-cleaning" class="section level1">
 <h1>Data Cleaning</h1>
+<pre class="r"><code>library(tidyverse)</code></pre>
+<pre><code>## -- Attaching packages --------------------------------------- tidyverse 1.3.0 --</code></pre>
+<pre><code>## v ggplot2 3.3.3     v purrr   0.3.4
+## v tibble  3.0.6     v dplyr   1.0.4
+## v tidyr   1.1.2     v stringr 1.4.0
+## v readr   1.4.0     v forcats 0.5.1</code></pre>
+<pre><code>## -- Conflicts ------------------------------------------ tidyverse_conflicts() --
+## x dplyr::filter() masks stats::filter()
+## x dplyr::lag()    masks stats::lag()</code></pre>
 <pre class="r"><code>hotels &lt;- read.csv(&quot;hotel_bookings.csv&quot;)
 str(hotels)</code></pre>
 <pre><code>## &#39;data.frame&#39;:    119390 obs. of  32 variables:
@@ -313,7 +322,52 @@ str(hotels)</code></pre>
 ##                         
 ##                         
 ## </code></pre>
-<pre class="r"><code>hotels$arrival_date_month &lt;- as.factor(hotels$arrival_date_month)</code></pre>
+<pre class="r"><code># Variables turned into factors
+# arrival_date_year
+# arrival_date_month
+# arrival_date_week_number
+# arrival_date_day_of_month
+# adults
+# children
+# babies
+# previous_cancellations
+# booking_changes
+# required_car_parking_spaces
+# total_of_special_requests
+# country
+# meal
+# market_segment
+# distribution_channel
+# customer_type
+# reservation_status
+# reserved_room_type
+# assigned_room_type
+# hotel
+
+hotels$arrival_date_month &lt;- as.factor(hotels$arrival_date_month)
+hotels$arrival_date_year &lt;- as.factor(hotels$arrival_date_year)
+hotels$arrival_date_week_number &lt;- as.factor(hotels$arrival_date_week_number)
+hotels$arrival_date_day_of_month &lt;- as.factor(hotels$arrival_date_day_of_month)
+hotels$children &lt;- as.factor(hotels$children)
+hotels$adults &lt;- as.factor(hotels$adults)
+hotels$babies &lt;- as.factor(hotels$babies)
+hotels$previous_cancellations &lt;- as.factor(hotels$previous_cancellations)
+hotels$booking_changes &lt;- as.factor(hotels$booking_changes)
+hotels$required_car_parking_spaces &lt;- as.factor(hotels$required_car_parking_spaces)
+hotels$total_of_special_requests &lt;- as.factor(hotels$total_of_special_requests)
+hotels$country &lt;- as.factor(hotels$country)
+hotels$meal &lt;- as.factor(hotels$meal)
+hotels$market_segment &lt;- as.factor(hotels$market_segment)
+hotels$distribution_channel &lt;- as.factor(hotels$distribution_channel)
+hotels$customer_type &lt;- as.factor(hotels$customer_type)
+hotels$reservation_status &lt;- as.factor(hotels$reservation_status)
+hotels$reserved_room_type &lt;- as.factor(hotels$reserved_room_type)
+hotels$assigned_room_type &lt;- as.factor(hotels$assigned_room_type)
+hotels$hotel &lt;- as.factor(hotels$hotel)</code></pre>
+</div>
+<div id="testing" class="section level1">
+<h1>Testing</h1>
+<pre class="r"><code># hotels %&gt;% group_by(country) %&gt;% summarise(num_cancel = sum(is_canceled)) %&gt;% arrange(desc(num_cancel)) %&gt;% head(10) %&gt;% print %&gt;% ggplot(aes(x = country, y = num_cancel, fill= num_cancel))+ geom_col()</code></pre>
 </div>
 
 

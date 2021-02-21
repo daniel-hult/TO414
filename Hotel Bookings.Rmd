@@ -26,7 +26,6 @@ summary(hotels)
 # children
 # babies
 # previous_cancellations
-# previous_bookings_not_cancelled
 # booking_changes
 # required_car_parking_spaces
 # total_of_special_requests
@@ -48,7 +47,6 @@ hotels$children <- as.factor(hotels$children)
 hotels$adults <- as.factor(hotels$adults)
 hotels$babies <- as.factor(hotels$babies)
 hotels$previous_cancellations <- as.factor(hotels$previous_cancellations)
-hotels$previous_bookings_not_cancelled <- as.factor(hotels$previous_bookings_not_cancelled)
 hotels$booking_changes <- as.factor(hotels$booking_changes)
 hotels$required_car_parking_spaces <- as.factor(hotels$required_car_parking_spaces)
 hotels$total_of_special_requests <- as.factor(hotels$total_of_special_requests)
