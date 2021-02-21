@@ -18,10 +18,9 @@ knitr::opts_chunk$set(echo = TRUE)
 # Data Cleaning
 ```{r}
 library(tidyverse)
+library(corrr)
 
 hotels <- read.csv("hotel_bookings.csv")
-str(hotels)
-summary(hotels)
 
 # Variables turned into factors
 # arrival_date_year
@@ -65,8 +64,8 @@ hotels$reserved_room_type <- as.factor(hotels$reserved_room_type)
 hotels$assigned_room_type <- as.factor(hotels$assigned_room_type)
 hotels$hotel <- as.factor(hotels$hotel)
 
-
-
+str(hotels)
+summary(hotels)
 ```
 
 # Testing
@@ -78,11 +77,28 @@ hotels %>% group_by(country) %>% summarise(num_cancel = sum(is_canceled)) %>% ar
 hotels %>% group_by(distribution_channel) %>% arrange(desc(num_cancel)) %>% head(10) %>% print %>% ggplot(aes(x = distribution_channel, y = num_cancel, fill = num_cancel)) + geom_col()
 
 hotels %>% group_by(customer_type) %>%
-  arrange(desc(is_canceled)) %>%
-  ggplot(aes(x = customer_type, y = is_canceled, fill = is_canceled)) + geom_col()
+  arrange(desc(num_cancel)) %>%
+  ggplot(aes(x = customer_type, y = num_cancel, fill = num_cancel)) + geom_col()
 
 hotels %>% group_by(reservation_status) %>%
-  ggplot(aes(x = reservation_status, y = nrow(hotels))) + geom_col()
+  ggplot(aes(x = reservation_status, y = num_cancel)) + geom_col()
+
+hotels %>% group_by(arrival_date_month) %>% summarise(num_cancel = sum(is_canceled)) %>% arrange(desc(num_cancel)) %>% head(12) %>% print %>% ggplot(aes(x = arrival_date_month, y = num_cancel, fill= num_cancel))+ geom_col()
+
+hotels %>% select(is_canceled, children) %>% 
+  na.omit(children) %>%
+  mutate(has_child = ifelse(children != 0, 1, 0)) %>%
+  group_by(has_child) %>%
+  summarise(num_cancel = sum(is_canceled))
+
+# Num Bookings w/out children = 110796
+# Num Bookings w/ children = 8590
+# Cancelation rate w/out child = 37%
+# Cancelation rate w/ child = 36%
+
+c <- hotels %>%
+  correlate() %>%
+  focus(is_canceled)
 ```
 
 # Forecasting Cancellations
@@ -92,7 +108,6 @@ hotels %>% group_by(reservation_status) %>%
 cancel <- sum(hotels$is_canceled)
 
 hotels$arrival_week_ordered <- hotels$arrival_date_week_number
-
 
 
 ```
