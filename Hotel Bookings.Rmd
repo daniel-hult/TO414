@@ -47,10 +47,10 @@ hotels$arrival_date_month <- as.factor(hotels$arrival_date_month)
 hotels$arrival_date_year <- as.factor(hotels$arrival_date_year)
 hotels$arrival_date_week_number <- as.factor(hotels$arrival_date_week_number)
 hotels$arrival_date_day_of_month <- as.factor(hotels$arrival_date_day_of_month)
-hotels$children <- as.factor(hotels$children)
-hotels$adults <- as.factor(hotels$adults)
-hotels$babies <- as.factor(hotels$babies)
-hotels$previous_cancellations <- as.factor(hotels$previous_cancellations)
+# hotels$children <- as.factor(hotels$children)
+# hotels$adults <- as.factor(hotels$adults)
+# hotels$babies <- as.factor(hotels$babies)
+# hotels$previous_cancellations <- as.factor(hotels$previous_cancellations)
 hotels$booking_changes <- as.factor(hotels$booking_changes)
 hotels$required_car_parking_spaces <- as.factor(hotels$required_car_parking_spaces)
 hotels$total_of_special_requests <- as.factor(hotels$total_of_special_requests)
@@ -63,6 +63,13 @@ hotels$reservation_status <- as.factor(hotels$reservation_status)
 hotels$reserved_room_type <- as.factor(hotels$reserved_room_type)
 hotels$assigned_room_type <- as.factor(hotels$assigned_room_type)
 hotels$hotel <- as.factor(hotels$hotel)
+
+hotels$kids <- hotels$children + hotels$babies
+
+hotels$totalbookings <- hotels$previous_cancellations + hotels$previous_bookings_not_canceled
+hotels$propcanceled <- ifelse(hotels$totalbookings != 0, hotels$previous_cancellations/hotels$totalbookings, NA)
+
+hotels$cancelled_morethanhalf <- as.factor(ifelse(hotels$propcanceled > 0.5, 1, 0))
 
 str(hotels)
 summary(hotels)
@@ -93,12 +100,20 @@ hotels %>% select(is_canceled, children) %>%
 
 # Num Bookings w/out children = 110796
 # Num Bookings w/ children = 8590
-# Cancelation rate w/out child = 37%
-# Cancelation rate w/ child = 36%
+# Cancellation rate w/out child = 37%
+# Cancellation rate w/ child = 36%
 
-c <- hotels %>%
-  correlate() %>%
-  focus(is_canceled)
+boxplot(propcanceled ~ is_canceled, data = hotels, na.rm = TRUE)
+
+# table(hotels$is_canceled[is.na(hotels$propcanceled)], hotels$cancelled_morethanhalf, na.rm = TRUE)
+
+table(hotels$is_canceled[!is.na(hotels$propcanceled)], hotels$cancelled_morethanhalf[!is.na(hotels$propcanceled)])
+
+round(prop.table(table(hotels$is_canceled[!is.na(hotels$propcanceled)], hotels$cancelled_morethanhalf[!is.na(hotels$propcanceled)])), 3)
+
+# Only 1/3 of your reservations by people who have made reservations before are made my people who have a history of showing up more than half the time. These people consistently show up and check in to their stay. The remaining 2/3 of reservations are made by people who have a history of cancelling. These people consistently book a reservation and then, ultimately, cancel that reservation.
+
+# if people cancelled more than half of prev. reservations, it 
 ```
 
 # Forecasting Cancellations
