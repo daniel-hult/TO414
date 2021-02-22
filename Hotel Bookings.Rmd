@@ -18,7 +18,6 @@ knitr::opts_chunk$set(echo = TRUE)
 # Data Cleaning
 ```{r}
 library(tidyverse)
-library(corrr)
 
 hotels <- read.csv("hotel_bookings.csv")
 
@@ -64,6 +63,8 @@ hotels$reserved_room_type <- as.factor(hotels$reserved_room_type)
 hotels$assigned_room_type <- as.factor(hotels$assigned_room_type)
 hotels$hotel <- as.factor(hotels$hotel)
 
+#Added New Variables
+
 hotels$kids <- hotels$children + hotels$babies
 
 hotels$totalbookings <- hotels$previous_cancellations + hotels$previous_bookings_not_canceled
@@ -77,37 +78,89 @@ summary(hotels)
 ```
 
 # Testing
+
+### Booking country and Cancellations
 ```{r}
-num_cancel <- sum(hotels$is_canceled)
+num_cancel <- sum(hotels$is_canceled) #Total number of cancellations
 
 hotels %>% group_by(country) %>% summarise(num_cancel = sum(is_canceled)) %>% arrange(desc(num_cancel)) %>% head(10) %>% print %>% ggplot(aes(x = country, y = num_cancel, fill= num_cancel))+ geom_col()
 
+```
+
+This output shows us the countries with the most cancellations via list and bargraph. From the data, Portugual is the country with the most cancellations by a significant amount, which could relate to the fact that the hotels from the data are located in Portugual. 
+
+### Booking Method and Cancellations
+
+```{r}
 hotels %>% group_by(distribution_channel) %>% arrange(desc(num_cancel)) %>% head(10) %>% print %>% ggplot(aes(x = distribution_channel, y = num_cancel, fill = num_cancel)) + geom_col()
 
+```
+
+This output shows us the number of canceled bookings that were completed through certain distribution channels. Customers who booked direct canceled more often than any other distribution channel. 
+
+### Customer Type and Cancellations
+
+```{r}
 hotels %>% group_by(customer_type) %>%
   arrange(desc(num_cancel)) %>%
   ggplot(aes(x = customer_type, y = num_cancel, fill = num_cancel)) + geom_col()
 
+```
+
+From the data, we notice that the number of transient customers who canceled their stay is much higher than any other category. This makes sense intuitively as transient customers have less of a liability when canceling their stay compared to transient-party customers or corporate customers.
+
+### Reservation Status
+
+```{r}
 hotels %>% group_by(reservation_status) %>%
   ggplot(aes(x = reservation_status, y = num_cancel)) + geom_col()
 
+```
+
+Graph to show the total amount of bookings that checked-out, were canceled, or did not show up. Most of the customers successfully checked out while a decent amount canceled their stay.
+
+### Booking Month and Cancellations
+
+```{r}
 hotels %>% group_by(arrival_date_month) %>% summarise(num_cancel = sum(is_canceled)) %>% arrange(desc(num_cancel)) %>% head(12) %>% print %>% ggplot(aes(x = arrival_date_month, y = num_cancel, fill= num_cancel))+ geom_col()
 
+```
+
+This output gives us the amount of cancellations that occurred within each month. Cancellations appeared to be higher during the summer months such as May, June, July, and August. This could be because people tend to travel more during summer months, so the amount of cancellations would be higher with more bookings.
+
+### Children and Cancellations
+
+```{r}
 hotels %>% select(is_canceled, children) %>% 
   na.omit(children) %>%
   mutate(has_child = ifelse(children != 0, 1, 0)) %>%
   group_by(has_child) %>%
   summarise(num_cancel = sum(is_canceled))
 
+```
+
+This table shows us the amount of customers who canceled their stay and whether or not they had children with them. There were 41,094 customers without children who canceled and 3,126 customers with children who canceled. 
+
+```{r}
 # Num Bookings w/out children = 110796
 # Num Bookings w/ children = 8590
 # Cancellation rate w/out child = 37%
 # Cancellation rate w/ child = 36%
 # The cancellation rate with and without children is roughly the same - no statistical significance
 
+```
+
+### Previous Bookings
+
+```{r}
 table(hotels$bookedbefore)
 round(prop.table(table(hotels$bookedbefore)), 3)
 
+```
+
+These tables show the amount and proportion of customers who have previously booked reservations in the past and whether or not they checked-in or canceled.
+
+```{r}
 round(prop.table(table(hotels$is_canceled[hotels$bookedbefore == 0])), 2)
 round(prop.table(table(hotels$is_canceled[hotels$bookedbefore == 1])), 2)
 #if a customer has booked before, they are much more likely to cancel. 1/3 of first-time customers are likely to cancel whereas 2/3 of repeat customers are likely to cancel.
@@ -131,9 +184,10 @@ round(prop.table(table(hotels$is_canceled[!is.na(hotels$propcanceled)], hotels$c
 # if people canceled more than half of prev. reservations, it 
 ```
 
+
 # Conclusion
 ```{r}
-# Standard factors that a manager may believe to drive cancellation (e.g. hotel type, children/no children) actually show little to no impact on cancellation rates. Rather, the largest indicator is the customers' history in booking/cancelling behavior. 
+# Standard factors that a manager may believe to drive cancellation (e.g. hotel type, children/no children) actually show little to no impact on cancellation rates. Rather, the largest indicator is the customers' history in booking/canceling behavior. Customers who have a history of canceling reservations in the past are more likely to do so in the future, therefore they should be charged a higher rate or cancellation fee. Repeat customers who have fulfilled their reservation in the past are most likely to fulfill future reservations, so these individuals should be our focus.
 
 
 ```
