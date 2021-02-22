@@ -16,148 +16,146 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 # Data Cleaning
+
+### General Setup
 ```{r}
 library(tidyverse)
-
 hotels <- read.csv("hotel_bookings.csv")
-
-# Variables turned into factors
-# arrival_date_year
-# arrival_date_month
-# arrival_date_week_number
-# arrival_date_day_of_month
-# adults
-# children
-# babies
-# booking_changes
-# required_car_parking_spaces
-# total_of_special_requests
-# country
-# meal
-# market_segment
-# distribution_channel
-# customer_type
-# reservation_status
-# reserved_room_type
-# assigned_room_type
-# hotel
-
-hotels$arrival_date_month <- as.factor(hotels$arrival_date_month)
-hotels$arrival_date_year <- as.factor(hotels$arrival_date_year)
-hotels$arrival_date_week_number <- as.factor(hotels$arrival_date_week_number)
-hotels$arrival_date_day_of_month <- as.factor(hotels$arrival_date_day_of_month)
-# hotels$children <- as.factor(hotels$children)
-# hotels$adults <- as.factor(hotels$adults)
-# hotels$babies <- as.factor(hotels$babies)
-# hotels$previous_cancellations <- as.factor(hotels$previous_cancellations)
-hotels$booking_changes <- as.factor(hotels$booking_changes)
-hotels$required_car_parking_spaces <- as.factor(hotels$required_car_parking_spaces)
-hotels$total_of_special_requests <- as.factor(hotels$total_of_special_requests)
-hotels$country <- as.factor(hotels$country)
-hotels$meal <- as.factor(hotels$meal)
-hotels$market_segment <- as.factor(hotels$market_segment)
-hotels$distribution_channel <- as.factor(hotels$distribution_channel)
-hotels$customer_type <- as.factor(hotels$customer_type)
-hotels$reservation_status <- as.factor(hotels$reservation_status)
-hotels$reserved_room_type <- as.factor(hotels$reserved_room_type)
-hotels$assigned_room_type <- as.factor(hotels$assigned_room_type)
-hotels$hotel <- as.factor(hotels$hotel)
-
-#Added New Variables
-
-hotels$kids <- hotels$children + hotels$babies
-
-hotels$totalbookings <- hotels$previous_cancellations + hotels$previous_bookings_not_canceled
-hotels$propcanceled <- ifelse(hotels$totalbookings != 0, hotels$previous_cancellations/hotels$totalbookings, NA)
-hotels$bookedbefore <- as.factor(ifelse(hotels$totalbookings != 0, 1, 0))
-
-hotels$cancelled_morethanhalf <- as.factor(ifelse(hotels$propcanceled > 0.5, 1, 0))
-
-str(hotels)
-summary(hotels)
 ```
 
-# Testing
-
-### Booking country and Cancellations
+### Redefining Variable Types
+The variables listed below are redefined from integers/characters to factors. The purpose of this is to set each variable up to perform certain analyses.
 ```{r}
-num_cancel <- sum(hotels$is_canceled) #Total number of cancellations
+# Arrival Date Year
+hotels$arrival_date_year <- as.factor(hotels$arrival_date_year) 
+# Arrival Date Month
+hotels$arrival_date_month <- as.factor(hotels$arrival_date_month)
+# Arrival Date Week Number
+hotels$arrival_date_week_number <- as.factor(hotels$arrival_date_week_number)
+# Arrival Date Day of Month
+hotels$arrival_date_day_of_month <- as.factor(hotels$arrival_date_day_of_month)
+# Booking Changes
+hotels$booking_changes <- as.factor(hotels$booking_changes)
+# Required Car Parking Spaces
+hotels$required_car_parking_spaces <- as.factor(hotels$required_car_parking_spaces)
+# Total of Special Requests
+hotels$total_of_special_requests <- as.factor(hotels$total_of_special_requests)
+# Country
+hotels$country <- as.factor(hotels$country)
+# Meal
+hotels$meal <- as.factor(hotels$meal)
+# Market Segment
+hotels$market_segment <- as.factor(hotels$market_segment)
+# Distribution Channel
+hotels$distribution_channel <- as.factor(hotels$distribution_channel)
+# Customer Type
+hotels$customer_type <- as.factor(hotels$customer_type)
+# Reservation Status
+hotels$reservation_status <- as.factor(hotels$reservation_status)
+# Reserved Room Type
+hotels$reserved_room_type <- as.factor(hotels$reserved_room_type)
+# Assigned Room Type
+hotels$assigned_room_type <- as.factor(hotels$assigned_room_type)
+# Hotel
+hotels$hotel <- as.factor(hotels$hotel)
+```
 
+### Creating New Columns
+The purpose of creating these new columns is to allow us to perform the necessary analyses.
+```{r}
+# Combines bookings with children and bookings with kids as one entity
+hotels$kids <- hotels$children + hotels$babies
+
+# Calculates Total Number of Bookings
+hotels$totalbookings <- hotels$previous_cancellations + hotels$previous_bookings_not_canceled
+
+# Calculates Proportion of Cancellations to Total Bookings
+hotels$propcanceled <- ifelse(hotels$totalbookings != 0, hotels$previous_cancellations/hotels$totalbookings, NA)
+
+# Creates a boolean value to determine if a booking was made by a customer who has booked in the past
+hotels$bookedbefore <- as.factor(ifelse(hotels$totalbookings != 0, 1, 0))
+
+# Determines for all customers if they have historically cancelled more than half of their bookings
+hotels$cancelled_morethanhalf <- as.factor(ifelse(hotels$propcanceled > 0.5, 1, 0))
+```
+
+### Creating New Variables
+Determining the total number of cancellations allows us to plot certain variables against total number of cancellations as a means to visually find any correlations in variables to cancellations.
+```{r}
+# Total number of cancellations
+num_cancel <- sum(hotels$is_canceled)
+```
+
+# Customer Analysis
+
+### Bookings by Country
+Below is a table and graph showing the number of cancellations made per country.
+```{r}
 hotels %>% group_by(country) %>% summarise(num_cancel = sum(is_canceled)) %>% arrange(desc(num_cancel)) %>% head(10) %>% print %>% ggplot(aes(x = country, y = num_cancel, fill= num_cancel))+ geom_col()
 
 ```
+From the data, Portugal is shown to be the country with the most cancellations by a significant amount. However, this is expected given that the hotels from the dataset are located in Portugal, and thus, attract more customers from Portugal than other countries. This chart can double as an indicator of where the customer base for the hotels are located.  
 
-This output shows us the countries with the most cancellations via list and bargraph. From the data, Portugual is the country with the most cancellations by a significant amount, which could relate to the fact that the hotels from the data are located in Portugual. 
-
-### Booking Method and Cancellations
-
+### Cancellations Per Booking Method
+Below is a bar chart showcasing the number of cancellations made after booking through different distribution channels.
 ```{r}
-hotels %>% group_by(distribution_channel) %>% arrange(desc(num_cancel)) %>% head(10) %>% print %>% ggplot(aes(x = distribution_channel, y = num_cancel, fill = num_cancel)) + geom_col()
-
+hotels %>% group_by(distribution_channel) %>% arrange(desc(num_cancel)) %>% head(10) %>% ggplot(aes(x = distribution_channel, y = num_cancel, fill = num_cancel)) + geom_col()
 ```
+The output shows us the number of canceled bookings made after booking through certain distribution channels. Customers who booked direct canceled more often than any other distribution channel. Customers who booked through the corporate distribution channel made by far the least number of cancellations. Corporate distribution channels implies business travel and thus, there is an obligation for the customers (company employees) to attend given that the purposes of the booking is for work.
 
-This output shows us the number of canceled bookings that were completed through certain distribution channels. Customers who booked direct canceled more often than any other distribution channel. 
+### Cancellations Per Customer Type
+Below is a bar chart showcasing the number of cancellations made for different customer types. Customer Types are categorized by Contract, Group, Transient, and Transient-Party. 
 
-### Customer Type and Cancellations
+###### Contract customers are defined as customers in which the booking has an allotment or other type of contract associated to it.
 
+###### Group customers are defined as customers booking with an associated group.
+
+###### Transient Customers are defined as customers booking as not part of a group or contract, and is not associated with any other transient booking.
+
+###### Transient-Party customers are defined as customers whose booking is transient, but is also associated to at least one other transient booking.
 ```{r}
 hotels %>% group_by(customer_type) %>%
   arrange(desc(num_cancel)) %>%
   ggplot(aes(x = customer_type, y = num_cancel, fill = num_cancel)) + geom_col()
-
 ```
-
-From the data, we notice that the number of transient customers who canceled their stay is much higher than any other category. This makes sense intuitively as transient customers have less of a liability when canceling their stay compared to transient-party customers or corporate customers.
+From the data, we notice that the number of transient customers who canceled their stay is much higher than any other category. This makes sense intuitively as transient customers have less of a liability when canceling their stay compared to transient-party customers or corporate customers. Transient customers are primarily individuals traveling, and thus, do not have any attached obligations to their booking whereas contract, group, and transient-part customer types have some from of attached obligation to their booking (e.g. other people, company, etc.).
 
 ### Reservation Status
-
+Below is a bar chart that shows a comparison between the number of bookings canceled, number of bookings successfully stayed and checked-out, and the number of bookings that resulted in a no-show across the total number of bookings in the data set.
 ```{r}
 hotels %>% group_by(reservation_status) %>%
   ggplot(aes(x = reservation_status, y = num_cancel)) + geom_col()
-
 ```
+It can be noted that most of the bookings resulted in a successful check-in and check-out. A substantial number of bookings also resulted in a cancellation. However, this presents a unique opportunity for the company to identify and charge customers higher cancellation fees who are likely to result in a cancellation after booking. 
 
-Graph to show the total amount of bookings that checked-out, were canceled, or did not show up. Most of the customers successfully checked out while a decent amount canceled their stay.
-
-### Booking Month and Cancellations
-
+### Cancellations Per Booking Month
+Below is a table and bar chart showcasing the number of cancellations made per month from July 2015 to August 2017. 
 ```{r}
 hotels %>% group_by(arrival_date_month) %>% summarise(num_cancel = sum(is_canceled)) %>% arrange(desc(num_cancel)) %>% head(12) %>% print %>% ggplot(aes(x = arrival_date_month, y = num_cancel, fill= num_cancel))+ geom_col()
-
 ```
+Ultimately, there is high variability in the number of cancellations per month, there does appear to be a trend. The five months with the lowest number of cancellations happen consecutively (November, December, January, February, March). While this trend can be attributed to a possible lower number of bookings made in these five months, there can also be insight into possible seasonality effects occurring in which the months of November, December, January, February, and March yield higher rates of cancellation. 
 
-This output gives us the amount of cancellations that occurred within each month. Cancellations appeared to be higher during the summer months such as May, June, July, and August. This could be because people tend to travel more during summer months, so the amount of cancellations would be higher with more bookings.
+On the other hand, cancellations appeared to be highest during the summer months such as May, June, July, and August. This could be possibly be attributed to people traveling more during summer months; however, there is also potential insight for seasonality effects mentioned above.
 
 ### Children and Cancellations
-
+The table below shows the number of customers who canceled their stay and whether or not they had children booked with them. 
 ```{r}
 hotels %>% select(is_canceled, children) %>% 
   na.omit(children) %>%
   mutate(has_child = ifelse(children != 0, 1, 0)) %>%
   group_by(has_child) %>%
   summarise(num_cancel = sum(is_canceled))
-
 ```
+Of customers who canceled, 41,094 customers booked/canceled without children and 3,126 customers booked/canceled with children. The total number of bookings made with children was 110,796 whereas the total number of bookings made without children was 8,590. Calculating the cancellation rate between these two segments indicates a 36% cancellation rate for customers booking with children and a 37% cancellation rate for customers booking without children. 
 
-This table shows us the amount of customers who canceled their stay and whether or not they had children with them. There were 41,094 customers without children who canceled and 3,126 customers with children who canceled. 
-
-```{r}
-# Num Bookings w/out children = 110796
-# Num Bookings w/ children = 8590
-# Cancellation rate w/out child = 37%
-# Cancellation rate w/ child = 36%
-# The cancellation rate with and without children is roughly the same - no statistical significance
-
-```
+Ultimately, there is no statistical significance in the differences of cancellation rates between these two customer segments; however, this information is insightful given that this is a common metric hotel companies use to evaluate the cancellation rate of customers. 
 
 ### Previous Bookings
-
 ```{r}
 table(hotels$bookedbefore)
 round(prop.table(table(hotels$bookedbefore)), 3)
 
 ```
-
 These tables show the amount and proportion of customers who have previously booked reservations in the past and whether or not they checked-in or canceled.
 
 ```{r}
