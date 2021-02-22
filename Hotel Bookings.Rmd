@@ -150,42 +150,38 @@ Of customers who canceled, 41,094 customers booked/canceled without children and
 
 Ultimately, there is no statistical significance in the differences of cancellation rates between these two customer segments; however, this information is insightful given that this is a common metric hotel companies use to evaluate the cancellation rate of customers. 
 
-### Previous Bookings
+### Customers with Previous Bookings
+The tables below show the number and proportion of customers who booked reservations in the past and whether or not those customers checked-in or canceled in their previous bookings. 0 represents customers booking without children and 1 represents customers booking with children.
 ```{r}
 table(hotels$bookedbefore)
 round(prop.table(table(hotels$bookedbefore)), 3)
-
 ```
-These tables show the amount and proportion of customers who have previously booked reservations in the past and whether or not they checked-in or canceled.
+The tables indicate that 92.1% of bookings are made by first-time customers whereas 7.9% of bookings are made by returning customers. 
 
+Below are two tables showing the cancellation rates of returning customers - customers who have booked before at the hotel. The first table showcases the cancellation rate for first-time customers and the second table showcases the cancellation rate for returning customers. 0 represents customers who successfully checked-in to their booking and 1 represents customers who canceled their booking.
 ```{r}
 round(prop.table(table(hotels$is_canceled[hotels$bookedbefore == 0])), 2)
 round(prop.table(table(hotels$is_canceled[hotels$bookedbefore == 1])), 2)
-#if a customer has booked before, they are much more likely to cancel. 1/3 of first-time customers are likely to cancel whereas 2/3 of repeat customers are likely to cancel.
+```
+The tables indicate that first-time customers have a lower cancellation rate (35%) than returning customers (64%). Therefore, if a customer has booked before, they are much more likely to cancel. 1/3 of first-time customers are likely to cancel whereas 2/3 of repeat customers are likely to cancel.
 
+Below are two tables showing the cancellation rate of (1) returning customers who have canceled previous bookings fewer than half of the time, and (2) returning customers who have canceled more than half previous bookings. 0 represents customers who successfully checked-in to their booking and 1 represents customers who canceled their booking.
+```{r}
 round(prop.table(table(hotels$is_canceled[hotels$cancelled_morethanhalf == 0])), 2)
 round(prop.table(table(hotels$is_canceled[hotels$cancelled_morethanhalf == 1])), 2)
 # IF a customer has NOT canceled more than half of their bookings, then they will almost certainly check-in/come. IF a customer HAS canceled more than half of their bookings, then they will almost certainly cancel again.
+```
+The tables indicate that customers who have not canceled more than half of their previous bookings are substantially less likely to cancel their next booking (5%) than customers who have canceled more than half of their previous bookings (99%). Ultimately, if a customer has not canceled more than half of their bookings, then they will almost certainly check-in. If a customer has canceled more than half of their bookings, then they will almost certainly cancel again.
 
-# -----------------------------------------------------------
-
+Below is a boxplot and two tables showcasing the cancellation likelihood of customers based on their historical cancellation rates.
+```{r}
 boxplot(propcanceled ~ is_canceled, data = hotels, na.rm = TRUE)
-
-# table(hotels$is_canceled[is.na(hotels$propcanceled)], hotels$cancelled_morethanhalf, na.rm = TRUE)
 
 table(hotels$is_canceled[!is.na(hotels$propcanceled)], hotels$cancelled_morethanhalf[!is.na(hotels$propcanceled)])
 
 round(prop.table(table(hotels$is_canceled[!is.na(hotels$propcanceled)], hotels$cancelled_morethanhalf[!is.na(hotels$propcanceled)])), 3)
-
-# Only 1/3 of your reservations by people who have made reservations before are made my people who have a history of showing up more than half the time. These people consistently show up and check in to their stay. The remaining 2/3 of reservations are made by people who have a history of canceling. These people consistently book a reservation and then, ultimately, cancel that reservation.
-
-# if people canceled more than half of prev. reservations, it 
 ```
-
+Only 1/3 of reservations by people who have made reservations before are made my people who have a history of showing up more than half the time. These people consistently show up and check in to their stay. The remaining 2/3 of reservations are made by people who have a history of canceling. These people consistently book a reservation and then, ultimately, cancel that reservation.
 
 # Conclusion
-```{r}
-# Standard factors that a manager may believe to drive cancellation (e.g. hotel type, children/no children) actually show little to no impact on cancellation rates. Rather, the largest indicator is the customers' history in booking/canceling behavior. Customers who have a history of canceling reservations in the past are more likely to do so in the future, therefore they should be charged a higher rate or cancellation fee. Repeat customers who have fulfilled their reservation in the past are most likely to fulfill future reservations, so these individuals should be our focus.
-
-
-```
+Standard factors that a manager may believe to drive cancellation (e.g. hotel type, children/no children) actually show little to no impact on cancellation rates. Rather, the largest indicator is the customers' history in booking/canceling behavior. Customers who have a history of canceling reservations in the past are more likely to do so in the future, therefore they should be charged a higher rate or cancellation fee. Repeat customers who have fulfilled their reservation in the past are most likely to fulfill future reservations, so these individuals should be our target customer focus going forward.
