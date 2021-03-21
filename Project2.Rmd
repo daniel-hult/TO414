@@ -1,0 +1,34 @@
+---
+title: "Project 2"
+author: "Braden Crimmins, Jaylen Burch, Tanner Burke, Derek Fuller, Daniel Hult"
+date: "3/21/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+```{r}
+loans <- read.csv("ProjectA_Listings2013.csv")
+summary(loans)
+```
+
+
+##Linear Regression
+```{r}
+m1 <- lm(borrower_rate ~ ., data = loans)
+summary(m1)
+```
+
+
+##Logistic Regression
+```{r}
+m2 <- glm(borrower_rate ~ ., data = loans, family = "binomial")
+summary(m2)
+```
+
+
+
