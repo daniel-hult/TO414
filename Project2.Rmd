@@ -1,6 +1,6 @@
 ---
 title: "Project 2"
-author: "Braden Crimmins, Jaylen Burch, Tanner Burke, Derek Fuller, Daniel Hult"
+author: "Braden Crimmins, Jaylen Burch, Tanner Burke, Derek Fuller"
 date: "3/21/2021"
 output: html_document
 ---
@@ -9,26 +9,143 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+In this project, we hope to identify discrepancies between the factors used to decide interest rates on loans and the factors that actually make such loans risky. We will accomplish this by first generating a linear regression model that determines which factors are used in determining interest rates (see "Linear Regression"), and then comparing it to our logistic model that determines which factors actually influence the risk of default (see "Logistic Regression"). By comparing these models, we can identify which factors lenders might incorrectly believe are 'risky', and we can generate profit / make the market more efficient by lending to those underserved populations.
 
-
+First, we read in and clean our data. Making variables factors ensures our models don't accidentally misinterpret them, and ensures we generate meaningful results. 
 ```{r}
 loans <- read.csv("ProjectA_Listings2013.csv")
-summary(loans)
+
+loans$loan_status <- as.factor(loans$loan_status)
+loans$loan_status_description <- as.factor(loans$loan_status_description)
+loans$loan_origination_date <- as.factor(loans$loan_origination_date)
+loans$prosper_rating <- as.factor(loans$prosper_rating)
+loans$scorex <- as.factor(loans$scorex)
+loans$prosper_score <- as.factor(loans$prosper_score)
+loans$listing_category_id <- as.factor(loans$listing_category_id)
+loans$income_range <- as.factor(loans$income_range)
+loans$income_range_description <- as.factor(loans$income_range_description)
+loans$income_verifiable <- as.factor(loans$income_verifiable)
+loans$employment_status_description <- as.factor(loans$employment_status_description)
+loans$occupation <- as.factor(loans$occupation)
+loans$borrower_state <- as.factor(loans$borrower_state)
+loans$borrower_city <- as.factor(loans$borrower_city)
+loans$lender_indicator <- as.factor(loans$lender_indicator)
+loans$first_recorded_credit_line <- as.factor(loans$first_recorded_credit_line)
+loans$is_homeowner <- as.factor(loans$is_homeowner)
 ```
 
-
-##Linear Regression
+## Linear Regression
+Once we've read our data, we can begin working on our linear regression. We begin by further cleaning our data so it is as suitable as possible for the linear regression we plan to do.
 ```{r}
-m1 <- lm(borrower_rate ~ ., data = loans)
+# Create copy of full dataset for the linear model
+loans_lm <- loans
+
+# Remove data we wouldn't have when setting rate
+loans_lm$loan_status_description <- NULL
+loans_lm$number_of_days <- NULL
+loans_lm$principal_balance <- NULL
+loans_lm$amount_delinquent <- NULL
+loans_lm$installment_balance <- NULL
+loans_lm$real_estate_balance <- NULL
+loans_lm$revolving_balance <- NULL
+
+# Remove duplicative data
+loans_lm$income_range_description <- NULL
+```
+
+Once this data is cleaned, we can create a linear model with most of the remaining terms (excluding terms like city and state that don't add much information and just make our model infeasible to compute)
+```{r}
+# Create linear model 
+m1 <- lm(borrower_rate ~ amount_funded + prosper_rating + listing_term + listing_monthly_payment
+          + prosper_score + listing_category_id + stated_monthly_income * income_verifiable
+          + employment_status_description + occupation + months_employed + lender_indicator 
+          + monthly_debt + current_delinquencies + delinquencies_last7_years + public_records_last10_years 
+          + public_records_last12_months + credit_lines_last7_years + inquiries_last6_months 
+          + current_credit_lines + bankcard_utilization + total_inquiries + total_trade_items 
+          + satisfactory_accounts + now_delinquent_derog + was_delinquent_derog 
+          + is_homeowner, data = loans_lm)
 summary(m1)
 ```
 
-
-##Logistic Regression
+Looking at the summary, we can see which factors are significant and which ones aren't exlcuding the insignificant factors yeilds the following model, which avoids overfitting.
 ```{r}
-m2 <- glm(borrower_rate ~ ., data = loans, family = "binomial")
+# Remove all insignificant factors
+m2 <- lm(borrower_rate ~ amount_funded + prosper_rating + listing_term + listing_monthly_payment
+          + stated_monthly_income * income_verifiable + employment_status_description + occupation 
+          + inquiries_last6_months + bankcard_utilization + total_inquiries + satisfactory_accounts 
+          + is_homeowner, data = loans_lm)
 summary(m2)
 ```
+
+## Logistic Regression
+Now we can create our model which seeks to find the real factors that create a risk of default. First, copy over the data we'll need to our new dataframe:
+```{r}
+loans_glm <- loans_lm
+loans_glm$loan_status <- loans$loan_status
+```
+
+Now filter our the loans that haven't been completed, one way or the other - we only want loans we either know were paid, or loans we know weren't.
+```{r}
+# Filter out ongoing loans
+loans_glm <- loans_glm[loans_glm$loan_status != 1, ]
+```
+
+With that done, we can create a new indicator variable that takes value 1 if the loan was paid in full, and value 0 if the loan was not.
+```{r}
+# Create indicator variable for if loan is paid in full
+loans_glm$loan_paid <- as.factor(ifelse(loans_glm$loan_status == 4, 1, 0))
+```
+
+Once this is done, create a logistic regression that relates the factors from before with whether or not the loan is paid. 
+```{r}
+# Create logistic model for whether loan is paid in full
+m3 <- glm(loan_paid ~ amount_funded + prosper_rating + listing_term + listing_monthly_payment
+          + prosper_score + listing_category_id + stated_monthly_income * income_verifiable
+          + employment_status_description + occupation + months_employed + lender_indicator 
+          + monthly_debt + current_delinquencies + delinquencies_last7_years + public_records_last10_years 
+          + public_records_last12_months + credit_lines_last7_years + inquiries_last6_months 
+          + current_credit_lines + bankcard_utilization + total_inquiries + total_trade_items 
+          + satisfactory_accounts + now_delinquent_derog + was_delinquent_derog 
+          + is_homeowner, data = loans_glm, family = "binomial")
+summary(m3)
+```
+
+As with before, remove the insignificant factors, yielding a model that identifies what aspects are actually important in deciding probability of default. 
+```{r}
+# Remove insignificant factors
+m4 <- glm(loan_paid ~ amount_funded + prosper_rating + listing_term 
+          + stated_monthly_income * income_verifiable + lender_indicator + monthly_debt 
+          + public_records_last12_months, data = loans_glm, family = "binomial")
+summary(m4)
+
+```
+
+## Analysis
+
+The linear regression model suggests interest rates on loans depend on the following factors (that is, the following factors determine whether lenders consider you a credit risk): \
+- amount_funded \
+- prosper_rating \
+- listing_term \
+- listing_monthly_payment \
+- stated_monthly_income * income_verifiable \
+- employment_status_description \
+- occupation \
+- inquiries_last6_months \
+- bankcard_utilization \
+- total_inquiries \
+- satisfactory_accounts \
+- is_homeowner
+
+Our analysis suggests loan defaults actually depend on a different set of factors, and that lenders' intuitions about what constitutes a risk are often imprecise or outright wrong. The real factors that play a role are as follows: \
+- amount_funded \
+- prosper_rating \
+- listing_term \
+- stated_monthly_income * income_verifiable \
+- lender_indicator \
+- monthly_debt \
+- public_records_last12_months
+
+This means the current way of deciding interest rates does not correspond directly to the likelihood of default, as one would expect. This is a market inefficiency, which could be exploited to produce a profit for a lender who worked with currently overcharged and underserved populations, such as non homeowners. 
 
 
 
