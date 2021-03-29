@@ -1,0 +1,121 @@
+---
+title: "Stroke Prediction"
+author: "Braden Crimmins, Derek Fuller, Jaylen Burch, Tanner Burke"
+date: "3/29/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(class)
+library(caret)
+library(gmodels)
+library(neuralnet)
+```
+
+## Introduction
+
+Strokes are a leading cause of death in America, and even among those who experience them and survive, the effects can be long lasting. As soon as a stroke begins, the brain becomes deprived of oxygen it needs, and every second counts; fast responses ensure that lives can be saved and symptoms can be mitigated. By predicting strokes in advance, we can encourage patients to engage in lifestyle changes to hopefully preempt it, and ensure the potential victims and the people around them know what signs to look for so they can get the treatment they need without delay. 
+
+## Data Preparation
+
+```{r}
+strokes <- read.csv("healthcare-dataset-stroke-data.csv")
+
+# Simplify data to exclude potentially skewing entries
+# ('Other' has population size of 1, no statistical significance possible)
+strokes <- strokes[strokes$gender != "Other",]
+# ('N/A' for BMI has population size 201/5110, so can be excluded to draw
+#   conclusions based on BMI)
+strokes <- strokes[strokes$bmi != "N/A",]
+
+# Make binary factors into binary numbers
+strokes$gender <- ifelse(strokes$gender == "Male", 1, 0)
+strokes$ever_married <- ifelse(strokes$ever_married == "Yes", 1, 0)
+strokes$residence <- ifelse(strokes$Residence_type == "Urban", 1, 0)
+
+# Clear unneeded data
+strokes$Residence_type <- NULL
+strokes$id <- NULL
+
+# Make BMI from string to number
+strokes$bmi <- as.numeric(strokes$bmi)
+
+# Make factors into factors
+strokes$work_type <- as.factor(strokes$work_type)
+strokes$smoking_status <- as.factor(strokes$smoking_status)
+
+# Make factors into indicator variables
+strokes <- as.data.frame(model.matrix(~.-1,strokes))
+
+# Shuffle data
+set.seed(12345)
+strokes <- strokes[sample(nrow(strokes)),]
+
+# Normalize data
+normalize <- function(x) {
+  return ((x - min(x)) / (max(x) - min(x)))
+} # TODO: Replace
+
+strokes <- as.data.frame(lapply(strokes, normalize))
+```
+
+## Choosing Test and Train Sets
+
+```{r}
+test_indicies <- sample(1:nrow(strokes), 500) 
+
+strokes_train <- strokes[-test_indicies,]
+strokes_test <- strokes[test_indicies,]
+```
+
+## Building Logistic Regression Model
+
+```{r}
+
+lr_model <- glm(stroke ~ ., data = strokes_train, family = "binomial")
+lr_predictions <- predict(lr_model, newdata = strokes_test, type = "response")
+strokes_test_pred_lm <- ifelse(lr_predictions > .25, 1, 0)
+
+CrossTable(x = strokes_test$stroke, y = strokes_test_pred_lm, 
+          prop.chisq=FALSE)
+```
+
+## Building ANN Model
+
+```{r}
+nn_model <- neuralnet(stroke ~ ., data = strokes_train)
+nn_model_results <- compute(nn_model, strokes_test) 
+strokes_test_pred_nn <- ifelse(nn_model_results$net.result > .25, 1, 0)
+
+CrossTable(x = strokes_test$stroke, y = strokes_test_pred_nn, 
+          prop.chisq=FALSE)
+```
+
+## Building KNN Model
+
+```{r}
+strokes_train_labels <- strokes_train$stroke
+strokes_test_labels <- strokes_test$stroke
+
+strokes_train$stroke <- NULL
+strokes_test$stroke <- NULL
+
+strokes_test_pred_knn <- knn(train = strokes_train, test = strokes_test,
+                             cl = strokes_train_labels, k=3)
+
+CrossTable(x = strokes_test_labels, y = strokes_test_pred_knn, 
+          prop.chisq=FALSE)
+
+# Change data to combinable format
+strokes_test_pred_knn <- ifelse(strokes_test_pred_knn == 1, 1, 0)
+```
+
+## Building Combined Model
+
+```{r}
+combined_predictions <- strokes_test_pred_knn + strokes_test_pred_lm + strokes_test_pred_nn
+combined_predictions <- ifelse(combined_predictions > 1, 1, 0)
+CrossTable(x = strokes_test_labels, y = combined_predictions, 
+          prop.chisq=FALSE)
+```
